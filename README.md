@@ -290,6 +290,41 @@ Random chance = 20% (5 balanced classes).
 - **Per subject:** 1 subject has 0% NaN files, most have 100% (always a few dead sensors)
 - **Per SDS:** Short (SDS=0) 4.8% dead, Medium (SDS=1) 6.5% dead, Long (SDS=2) 14.8% dead — longer distance = harder to get signal through skull
 
+### How We Investigated the NaN Problem
+
+The initial finding "87% of files have NaN" sounded catastrophic. We ran a series of diagnostic analyses to understand exactly what was going on:
+
+**Step 1: Where are the NaN values?** (`analyze_data.py`)
+- Scanned all 1395 files, checked NaN per module → found 32/40 modules affected
+- Found NaN is concentrated in modules 10-39, worst in 34-39
+
+**Step 2: Is NaN scattered or structured?** (ad-hoc diagnostic scripts)
+- Checked every individual channel = `(module, SDS, wavelength, moment)` across 72 timepoints
+- Result: **1,004,400 channels checked, ZERO had partial NaN**
+- Every channel is either 100% working (916,920 channels, 91.3%) or 100% dead (87,480 channels, 8.7%)
+- This means NaN = "sensor offline" (hardware issue), NOT data corruption
+
+**Step 3: Which SDS levels die?**
+- SDS 0 (short, scalp): 4.8% dead
+- SDS 1 (medium, brain): 6.5% dead
+- SDS 2 (long, deep brain): 14.8% dead
+- Long-distance channels fail most because more light needs to pass through the skull
+
+**Step 4: Is it per-subject?** (headset fit issue)
+- 1/17 subjects has 0% NaN (perfect headset fit)
+- 14/17 subjects have 100% of their files with some NaN
+- Conclusion: NaN is caused by poor headset-scalp contact, varies by person/hair
+
+**Step 5: After removing dead channels, is anything left corrupted?**
+- Total NaN values before removing dead channels: 6,298,560 (8.71%)
+- Total NaN values after removing fully-dead channels: **0 (0.00%)**
+- The remaining 91.3% of data is perfectly clean with zero corruption
+
+**Step 6: Does removing dead channels improve classification?** (`train_clean_nirs.py`)
+- Tested 6 strategies: keep all (NaN→0), drop unreliable, SDS1-only, motor-only, mean impute
+- Result: **removing dead channels barely helped** (40.2% vs 39.0% subject-wise)
+- More features (even with some dead) beats fewer clean features — classifier learns to ignore zeros
+
 ### Motor Cortex Module Availability
 
 Motor cortex modules are the most important for distinguishing left/right fist:
