@@ -1,0 +1,148 @@
+root@ce5496f06a784036-9d6d229e6e2343ba:/mnt/amlfs-01/home/rchand/workspace/code/b_rob# python train_transformer.py
+python: can't open file '/mnt/amlfs-01/home/rchand/workspace/code/b_rob/train_transformer.py': [Errno 2] No such file or directory
+root@ce5496f06a784036-9d6d229e6e2343ba:/mnt/amlfs-01/home/rchand/workspace/code/b_rob#
+root@ce5496f06a784036-9d6d229e6e2343ba:/mnt/amlfs-01/home/rchand/workspace/code/b_rob#
+root@ce5496f06a784036-9d6d229e6e2343ba:/mnt/amlfs-01/home/rchand/workspace/code/b_rob# ls
+README.md        cursor_1_error_in_zsh_command_executio.md  main.py    pyproject.toml           uv.lock
+analyze_data.py  cursor_error_in_zsh_command_execution.md   notes.txt  train_bci_classifier.py
+root@ce5496f06a784036-9d6d229e6e2343ba:/mnt/amlfs-01/home/rchand/workspace/code/b_rob# ls
+README.md              bci_model_lda.pkl  cursor_1_error_in_zsh_command_executio.md  notes.txt                train_bci_v2.py       uv.lock
+analyze_data.py        bci_model_rf.pkl   cursor_error_in_zsh_command_execution.md   pyproject.toml           train_clean_nirs.py
+bci_label_encoder.pkl  bci_scaler.pkl     main.py                                    train_bci_classifier.py  train_transformer.py
+root@ce5496f06a784036-9d6d229e6e2343ba:/mnt/amlfs-01/home/rchand/workspace/code/b_rob# python train_transformer.py
+Using CUDA: NVIDIA H100 80GB HBM3
+=================================================================
+NIRS Transformer Classifier
+=================================================================
+Data directory: /mnt/amlfs-01/home/rchand/workspace/code/r_dataset/datasets--KernelCo--robot_control
+Found 1395 files
+
+--- Loading and preprocessing NIRS data ---
+  [200/1395] 8s
+  [400/1395] 17s
+  [600/1395] 25s
+  [800/1395] 33s
+  [1000/1395] 41s
+  [1200/1395] 49s
+  [1395/1395] 57s
+
+Dataset:
+  Shape:    (1395, 72, 80)  (samples, timesteps, channels)
+  Classes:  ['Both Fists', 'Left Fist', 'Relax', 'Right Fist', 'Tongue Tapping']
+  Samples:  1395
+  Subjects: 17
+  Labels:   {'Left Fist': 279, 'Relax': 279, 'Both Fists': 279, 'Tongue Tapping': 279, 'Right Fist': 279}
+  Time:     57s
+
+--- Model architectures ---
+
+  Transformer: 114,437 parameters
+    d_model=64, heads=4, layers=2, ff=128
+    dropout=0.3, patch_embed=Conv1d(5)+Conv1d(3)
+
+  CNN Baseline: 156,165 parameters
+    Conv1d(7)→Conv1d(5)→Conv1d(3)→Conv1d(3)→AvgPool→FC
+
+=================================================================
+STRATIFIED 5-FOLD CROSS-VALIDATION
+=================================================================
+
+  CNN Baseline — Stratified 5-fold CV
+  ──────────────────────────────────────────────────
+    Fold 1: test acc = 39.4%  (stopped at epoch 27, best val loss = 1.4407)
+    Fold 2: test acc = 42.7%  (stopped at epoch 25, best val loss = 1.5304)
+    Fold 3: test acc = 41.9%  (stopped at epoch 31, best val loss = 1.4117)
+    Fold 4: test acc = 40.5%  (stopped at epoch 26, best val loss = 1.4941)
+    Fold 5: test acc = 44.4%  (stopped at epoch 26, best val loss = 1.3895)
+  ──────────────────────────────────────────────────
+  Mean: 41.8% (+/- 1.7%)
+
+  Transformer — Stratified 5-fold CV
+  ──────────────────────────────────────────────────
+    Fold 1: test acc = 36.2%  (stopped at epoch 23, best val loss = 1.4708)
+    Fold 2: test acc = 41.2%  (stopped at epoch 23, best val loss = 1.5884)
+    Fold 3: test acc = 40.5%  (stopped at epoch 24, best val loss = 1.4380)
+    Fold 4: test acc = 42.7%  (stopped at epoch 28, best val loss = 1.4695)
+    Fold 5: test acc = 47.7%  (stopped at epoch 26, best val loss = 1.4004)
+  ──────────────────────────────────────────────────
+  Mean: 41.6% (+/- 3.7%)
+
+=================================================================
+SUBJECT-WISE CROSS-VALIDATION (GroupKFold)
+  Tests generalization to completely new subjects
+=================================================================
+
+  CNN Baseline — Subject-wise 5-fold CV
+  ──────────────────────────────────────────────────
+    Fold 1: test acc = 35.2%  (stopped at epoch 27, best val loss = 1.3924)
+    Fold 2: test acc = 35.9%  (stopped at epoch 32, best val loss = 1.3996)
+    Fold 3: test acc = 38.5%  (stopped at epoch 30, best val loss = 1.3941)
+    Fold 4: test acc = 35.2%  (stopped at epoch 31, best val loss = 1.3130)
+    Fold 5: test acc = 27.0%  (stopped at epoch 28, best val loss = 1.3380)
+  ──────────────────────────────────────────────────
+  Mean: 34.4% (+/- 3.9%)
+
+  Transformer — Subject-wise 5-fold CV
+  ──────────────────────────────────────────────────
+    Fold 1: test acc = 34.3%  (stopped at epoch 25, best val loss = 1.4684)
+    Fold 2: test acc = 31.5%  (stopped at epoch 25, best val loss = 1.4330)
+    Fold 3: test acc = 35.9%  (stopped at epoch 24, best val loss = 1.4160)
+    Fold 4: test acc = 32.2%  (stopped at epoch 34, best val loss = 1.4171)
+    Fold 5: test acc = 24.1%  (stopped at epoch 24, best val loss = 1.3474)
+  ──────────────────────────────────────────────────
+  Mean: 31.6% (+/- 4.1%)
+
+=================================================================
+CLASSIFICATION REPORT (Transformer, stratified CV, all folds combined)
+=================================================================
+                precision    recall  f1-score   support
+
+    Both Fists      0.340     0.315     0.327       279
+     Left Fist      0.339     0.405     0.369       279
+         Relax      0.437     0.434     0.435       279
+    Right Fist      0.364     0.312     0.336       279
+Tongue Tapping      0.599     0.616     0.608       279
+
+      accuracy                          0.416      1395
+     macro avg      0.416     0.416     0.415      1395
+  weighted avg      0.416     0.416     0.415      1395
+
+Confusion Matrix:
+          Both Fis  Left Fis     Relax  Right Fi  Tongue T
+                88        76        28        55        32  ← Both Fists
+                63       113        50        26        27  ← Left Fist
+                22        60       121        49        27  ← Relax
+                60        54        49        87        29  ← Right Fist
+                26        30        29        22       172  ← Tongue Tapping
+
+=================================================================
+SUMMARY — COMPARISON
+=================================================================
+
+  Previous best (hand-crafted features):
+    Stratified 5-fold: 50.3% (SVM)
+    Subject-wise:      40.2% (RF)
+
+  Deep learning results:
+    CNN (stratified)                   : 41.8% (+/- 1.7%)
+    Transformer (stratified)           : 41.6% (+/- 3.7%)
+    CNN (subject-wise)                 : 34.4% (+/- 3.9%)
+    Transformer (subject-wise)         : 31.6% (+/- 4.1%)
+
+=================================================================
+TRAINING FINAL MODEL ON ALL DATA
+=================================================================
+  Training for 80 epochs on all 1395 samples...
+    Epoch  20: loss=0.9841  acc=70.9%
+    Epoch  40: loss=0.7440  acc=82.9%
+    Epoch  60: loss=0.6544  acc=88.0%
+    Epoch  80: loss=0.6400  acc=89.0%
+
+  Model saved to /mnt/amlfs-01/home/rchand/workspace/code/b_rob/nirs_transformer.pt
+
+  Total time: 4.5 minutes
+=================================================================
+DONE!
+=================================================================
+root@ce5496f06a784036-9d6d229e6e2343ba:/mnt/amlfs-01/home/rchand/workspace/code/b_rob# tmux capture-pane -pS - > r_1.txt
+

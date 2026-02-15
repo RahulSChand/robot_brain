@@ -1,0 +1,4 @@
+perl /opt/dklab_realsync/realsync /Users/rchand/Desktop/b_rob/
+
+
+hf download KernelCo/robot_control --repo-type dataset --cache-dir /mnt/amlfs-01/home/rchand/workspace/code/r_dataset/
